@@ -27,7 +27,7 @@ MAINTAINER Starflux Solutions <admin@starfluxsolutions.com> version: 0.1
 # --- 1 Prepare Server
 RUN apt-get -y update && apt-get -y upgrade
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update && apt-get -y upgrade && apt-get -y install rsyslog patch logrotate supervisor screenfetch apt-utils
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install apt-utils patch rsyslog patch logrotate supervisor screenfetch apt-utils
 
 # --- 2 Install SSH server, rsync, and enable keys
 RUN apt-get -qq update && apt-get -y -qq install ssh certbot openssh-server rsync && \
@@ -144,14 +144,14 @@ RUN echo "ignoreregex =" >> /etc/fail2ban/filter.d/postfix-sasl.conf
 # RUN service apache2 restart
 
 # --- 24 Install ISPConfig 3
-#RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz && tar xfz ISPConfig-3-stable.tar.gz
+RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz && tar xfz ISPConfig-3-stable.tar.gz
 
 
 # Install ISPConfig
 ADD ./autoinstall.ini /root/ispconfig3_install/install/autoinstall.ini
-#RUN service mysql restart && php -q /root/ispconfig3_install/install/update.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
+RUN service mysql restart && php -q /root/ispconfig3_install/install/update.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
 #ADD ./etc/apache2/ispconfig.vhost 
-#RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
+RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
 
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
 
@@ -173,7 +173,9 @@ RUN service mysql start \
 && echo "FLUSH PRIVILEGES;" | mysql -u root
 
 
-VOLUME ["/var/www/","/var/mail/","/var/backup/","/var/lib/mysql","/etc/","/var/log/","/var/www/apps/","/usr/share/php/"]
+RUN apt-get autoremove -y && apt-get clean
+
+VOLUME ["/var/www/","/var/mail/","/var/backup/","/var/lib/mysql","/var/log/"]
 
 # Must use double quotes for json formatting.
 CMD ["/usr/bin/supervisord", "--configuration=/etc/supervisor/supervisord.conf"]
