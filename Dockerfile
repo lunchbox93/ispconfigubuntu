@@ -176,7 +176,7 @@ RUN service mysql start \
 && echo "FLUSH PRIVILEGES;" | mysql -u root
 
 
-VOLUME ["/var/www/","/var/mail/","/var/backup/","/var/lib/mysql","/etc/","/usr/local/ispconfig/","/var/log/","/var/www/apps/"]
+VOLUME ["/var/www/","/var/mail/","/var/backup/","/var/lib/mysql","/etc/","/usr/local/ispconfig/","/var/log/","/var/www/apps/","/usr/share/php/"]
 
 # Must use double quotes for json formatting.
 CMD ["/usr/bin/supervisord", "--configuration=/etc/supervisor/supervisord.conf"]
