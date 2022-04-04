@@ -151,7 +151,7 @@ RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.g
 ADD ./autoinstall.ini /root/ispconfig3_install/install/autoinstall.ini
 RUN service mysql restart && php -q /root/ispconfig3_install/install/install.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
 #ADD ./etc/apache2/ispconfig.vhost 
-RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/ispconfig.conf
+#RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/ispconfig.conf
 RUN service apache2 restart
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
 
