@@ -58,7 +58,7 @@ RUN echo "mariadb-server-10.0 mysql-server/root_password password pass" | debcon
 RUN echo "mariadb-server-10.0 mysql-server/root_password_again password pass" | debconf-set-selections
 RUN echo -n "Installing SMTP Mail server (Postfix)... " \
 && echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections \
-&& echo "postfix postfix/mailname string contato@seusite.con.br" | debconf-set-selections
+&& echo "postfix postfix/mailname string admin@starfluxsolutions.com" | debconf-set-selections
 RUN apt-get -y install postfix postfix-mysql postfix-doc mariadb-client mariadb-server openssl getmail4 rkhunter binutils dovecot-imapd dovecot-pop3d dovecot-mysql dovecot-sieve dovecot-lmtpd sudo
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
 RUN mv /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
@@ -70,23 +70,22 @@ RUN mkdir -p /etc/systemd/system/mysql.service.d/
 ADD ./etc/systemd/system/mysql.service.d/limits.conf /etc/systemd/system/mysql.service.d/limits.conf
 
 # --- 9 Install Amavisd-new, SpamAssassin And Clamav
-RUN apt-get -y install amavisd-new spamassassin clamav clamav-daemon unzip bzip2 arj nomarch lzop cabextract apt-listchanges libnet-ldap-perl libauthen-sasl-perl clamav-docs daemon libio-string-perl libio-socket-ssl-perl libnet-ident-perl zip libnet-dns-perl postgrey
-ADD ./etc/clamav/clamd.conf /etc/clamav/clamd.conf
+RUN apt-get -y install amavisd-new spamassassin unzip bzip2 arj nomarch lzop cabextract apt-listchanges libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl libnet-ident-perl zip libnet-dns-perl postgrey
 RUN service spamassassin stop && systemctl disable spamassassin
 RUN update-rc.d -f spamassassin remove
 
 # -- 10 Install XMPP Server
-RUN apt-get -qq update && apt-get -y -qq install git lua5.1 liblua5.1-0-dev lua-filesystem libidn11-dev libssl-dev lua-zlib lua-expat lua-event lua-bitop lua-socket lua-sec luarocks luarocks
-RUN luarocks install lpc
-RUN adduser --no-create-home --disabled-login --gecos 'Metronome' metronome
-RUN cd /opt && git clone https://github.com/maranda/metronome.git metronome
-RUN cd /opt/metronome && ./configure --ostype=debian --prefix=/usr && make && make install
+# RUN apt-get -qq update && apt-get -y -qq install git lua5.1 liblua5.1-0-dev lua-filesystem libidn11-dev libssl-dev lua-zlib lua-expat lua-event lua-bitop lua-socket lua-sec luarocks luarocks
+# RUN luarocks install lpc
+# RUN adduser --no-create-home --disabled-login --gecos 'Metronome' metronome
+# RUN cd /opt && git clone https://github.com/maranda/metronome.git metronome
+# RUN cd /opt/metronome && ./configure --ostype=debian --prefix=/usr && make && make install
 
 # --- 11 Install Apache2, PHP5, phpMyAdmin, FCGI, suExec, Pear, And mcrypt
 RUN echo 'phpmyadmin phpmyadmin/dbconfig-install boolean true' | debconf-set-selections \
 && echo 'phpmyadmin phpmyadmin/mysql/admin-pass password pass' | debconf-set-selections \
 && echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
-RUN echo $(grep $(hostname) /etc/hosts | cut -f1) localhost >> /etc/hosts && apt-get -y install apache2 apache2-doc apache2-utils libapache2-mod-php php7.2 php7.2-common php7.2-gd php7.2-mysql php7.2-imap phpmyadmin php7.2-cli php7.2-cgi libapache2-mod-fcgid apache2-suexec-pristine php-pear mcrypt  imagemagick libruby libapache2-mod-python php7.2-curl php7.2-intl php7.2-pspell php7.2-recode php7.2-sqlite3 php7.2-tidy php7.2-xmlrpc php7.2-xsl memcached php-memcache php-imagick php-gettext php7.2-zip php7.2-mbstring php-soap php7.2-soap
+RUN echo $(grep $(hostname) /etc/hosts | cut -f1) localhost >> /etc/hosts && apt-get -y install apache2 apache2-doc apache2-utils libapache2-mod-php php7.2 php7.2-common php7.2-gd php7.2-mysql php7.2-imap php7.2-cli php7.2-cgi libapache2-mod-fcgid apache2-suexec-pristine php-pear mcrypt  imagemagick libruby libapache2-mod-python php7.2-curl php7.2-intl php7.2-pspell php7.2-recode php7.2-sqlite3 php7.2-tidy php7.2-xmlrpc php7.2-xsl memcached php-memcache php-imagick php-gettext php7.2-zip php7.2-mbstring php-soap php7.2-soap
 RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf && a2enconf servername
 ADD ./etc/apache2/conf-available/httpoxy.conf /etc/apache2/conf-available/httpoxy.conf
 RUN a2enmod suexec rewrite ssl actions include dav_fs dav auth_digest cgi headers && a2enconf httpoxy && a2dissite 000-default && service apache2 restart
@@ -100,36 +99,36 @@ RUN a2enmod actions proxy_fcgi alias
 RUN service apache2 restart
 
 # --- 14 Install HHVM (HipHop Virtual Machine)
-RUN apt-get -y install hhvm
+#RUN apt-get -y install hhvm
 
 # --- 15 Install Let's Encrypt
-#RUN apt-get -y install certbot
-RUN apt-get -y install python-certbot-apache
+RUN apt-get -y install certbot
+#RUN apt-get -y install python-certbot-apache
 
 # --- 16 Install Mailman
-RUN echo 'mailman mailman/default_server_language en' | debconf-set-selections
-RUN apt-get -y install mailman
-ADD ./etc/aliases /etc/aliases
-RUN newaliases
-RUN service postfix restart
-RUN ln -s /etc/mailman/apache.conf /etc/apache2/conf-enabled/mailman.conf
-RUN service apache2 restart
+# RUN echo 'mailman mailman/default_server_language en' | debconf-set-selections
+# RUN apt-get -y install mailman
+# ADD ./etc/aliases /etc/aliases
+# RUN newaliases
+# RUN service postfix restart
+# RUN ln -s /etc/mailman/apache.conf /etc/apache2/conf-enabled/mailman.conf
+# RUN service apache2 restart
 
 # --- 17 Install PureFTPd and Quota
-RUN apt-get -y install pure-ftpd-common pure-ftpd-mysql quota quotatool
-RUN sed -i 's/VIRTUALCHROOT=false/VIRTUALCHROOT=true/g'  /etc/default/pure-ftpd-common
-RUN sed -i 's/STANDALONE_OR_INETD=inetd/STANDALONE_OR_INETD=standalone/g'  /etc/default/pure-ftpd-common
-RUN sed -i 's/UPLOADSCRIPT=/UPLOADSCRIPT=\/etc\/pure-ftpd\/clamav_check.sh/g'  /etc/default/pure-ftpd-common
-ADD ./etc/pure-ftpd/clamav_check.sh /etc/pure-ftpd/clamav_check.sh
-RUN echo 2 > /etc/pure-ftpd/conf/TLS
-RUN echo 1 > /etc/pure-ftpd/conf/CallUploadScript
-RUN mkdir -p /etc/ssl/private/
-RUN openssl req -x509 -nodes -days 7300 -newkey rsa:2048 -subj "/C=DE/ST=Karlsruhe/L=Baden-Wuerttemberg/O=IT/CN=$HOSTNAME" -keyout /etc/ssl/private/pure-ftpd.pem -out /etc/ssl/private/pure-ftpd.pem
-RUN chmod 600 /etc/ssl/private/pure-ftpd.pem
+# RUN apt-get -y install pure-ftpd-common pure-ftpd-mysql quota quotatool
+# RUN sed -i 's/VIRTUALCHROOT=false/VIRTUALCHROOT=true/g'  /etc/default/pure-ftpd-common
+# RUN sed -i 's/STANDALONE_OR_INETD=inetd/STANDALONE_OR_INETD=standalone/g'  /etc/default/pure-ftpd-common
+# RUN sed -i 's/UPLOADSCRIPT=/UPLOADSCRIPT=\/etc\/pure-ftpd\/clamav_check.sh/g'  /etc/default/pure-ftpd-common
+# ADD ./etc/pure-ftpd/clamav_check.sh /etc/pure-ftpd/clamav_check.sh
+# RUN echo 2 > /etc/pure-ftpd/conf/TLS
+# RUN echo 1 > /etc/pure-ftpd/conf/CallUploadScript
+# RUN mkdir -p /etc/ssl/private/
+# RUN openssl req -x509 -nodes -days 7300 -newkey rsa:2048 -subj "/C=DE/ST=Karlsruhe/L=Baden-Wuerttemberg/O=IT/CN=$HOSTNAME" -keyout /etc/ssl/private/pure-ftpd.pem -out /etc/ssl/private/pure-ftpd.pem
+# RUN chmod 600 /etc/ssl/private/pure-ftpd.pem
 
 # --- 18 Install BIND DNS Server
-RUN apt-get -y install bind9 dnsutils haveged
-RUN systemctl enable haveged
+# RUN apt-get -y install bind9 dnsutils haveged
+# RUN systemctl enable haveged
 
 
 # --- 19 Install Vlogger, Webalizer, and AWStats
@@ -137,15 +136,15 @@ RUN apt-get -y install vlogger webalizer awstats geoip-database libclass-dbi-mys
 ADD etc/cron.d/awstats /etc/cron.d/
 
 # --- 20 Install Jailkit
-RUN apt-get -y install build-essential autoconf automake libtool flex bison debhelper binutils
-RUN cd /tmp \
-&& wget http://olivier.sessink.nl/jailkit/jailkit-2.19.tar.gz \
-&& tar xvfz jailkit-2.19.tar.gz \
-&& cd jailkit-2.19 \
-&& echo 5 > debian/compat \
-&& ./debian/rules binary \
-&& cd /tmp \
-&& rm -rf jailkit-2.19*
+# RUN apt-get -y install build-essential autoconf automake libtool flex bison debhelper binutils
+# RUN cd /tmp \
+# && wget http://olivier.sessink.nl/jailkit/jailkit-2.19.tar.gz \
+# && tar xvfz jailkit-2.19.tar.gz \
+# && cd jailkit-2.19 \
+# && echo 5 > debian/compat \
+# && ./debian/rules binary \
+# && cd /tmp \
+# && rm -rf jailkit-2.19*
 
 # --- 21 Install fail2ban
 RUN apt-get -y install fail2ban
@@ -159,10 +158,10 @@ RUN echo "ignoreregex =" >> /etc/fail2ban/filter.d/postfix-sasl.conf
 RUN apt-get install ufw
 
 # --- 23 Install RoundCube
-RUN service mysql start && apt-get -y install roundcube roundcube-core roundcube-mysql roundcube-plugins
-ADD ./etc/apache2/conf-enabled/roundcube.conf /etc/apache2/conf-enabled/roundcube.conf
-ADD ./etc/roundcube/config.inc.php /etc/roundcube/config.inc.php
-RUN service apache2 restart
+# RUN service mysql start && apt-get -y install roundcube roundcube-core roundcube-mysql roundcube-plugins
+# ADD ./etc/apache2/conf-enabled/roundcube.conf /etc/apache2/conf-enabled/roundcube.conf
+# ADD ./etc/roundcube/config.inc.php /etc/roundcube/config.inc.php
+# RUN service apache2 restart
 
 # --- 24 Install ISPConfig 3
 RUN cd /tmp \
