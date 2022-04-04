@@ -27,7 +27,7 @@ MAINTAINER Weberson S Pimentel <weberson.pimentel@hotmail.com> version: 0.1
 # --- 1 Prepare Server
 RUN apt-get -y update && apt-get -y upgrade
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update && apt-get -y upgrade && apt-get -y install rsyslog rsyslog-relp logrotate supervisor screenfetch nano apt-utils
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install rsyslog patch rsyslog-relp logrotate supervisor screenfetch nano apt-utils
 
 # --- 2 Install SSH server, rsync, and enable keys
 RUN apt-get -qq update && apt-get -y -qq install ssh openssh-server rsync && \
