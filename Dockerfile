@@ -147,13 +147,12 @@ RUN echo "ignoreregex =" >> /etc/fail2ban/filter.d/postfix-sasl.conf
 # RUN service apache2 restart
 
 # --- 24 Install ISPConfig 3
-RUN cd /tmp \
-&& wget -O ispconfig.tar.gz https://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz \
-&& tar xfz ispconfig.tar.gz
+RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz && tar xfz ISPConfig-3-stable.tar.gz
+
 
 # Install ISPConfig
-ADD ./autoinstall.ini /tmp/ispconfig3_install/install/autoinstall.ini
-RUN service mysql restart && php -q /tmp/ispconfig3_install/install/install.php --autoinstall=/tmp/ispconfig3_install/install/autoinstall.ini
+ADD ./autoinstall.ini /root/ispconfig3_install/install/autoinstall.ini
+RUN service mysql restart && php -q /root/ispconfig3_install/install/install.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
 RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
 
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
@@ -164,7 +163,7 @@ EXPOSE 20/tcp 21/tcp 22/tcp 53 80/tcp 443/tcp 953/tcp 8080/tcp 30000 30001 30002
 ADD ./start.sh /start.sh
 ADD ./supervisord.conf /etc/supervisor/supervisord.conf
 ADD ./etc/cron.daily/sql_backup.sh /etc/cron.daily/sql_backup.sh
-ADD ./autoinstall.ini /tmp/ispconfig3_install/install/autoinstall.ini
+#ADD ./autoinstall.ini /tmp/ispconfig3_install/install/autoinstall.ini
 RUN chmod 755 /start.sh
 RUN mkdir -p /var/run/sshd
 RUN mkdir -p /var/log/supervisor

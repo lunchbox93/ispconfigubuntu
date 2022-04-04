@@ -7,13 +7,13 @@ if [ ! -z "$DEFAULT_EMAIL_HOST" ]; then
 	newaliases
 fi
 if [ ! -z "$LANGUAGE" ]; then
-	sed -i "s/^language=en$/language=$LANGUAGE/g" /tmp/ispconfig3_install/install/autoinstall.ini
+	sed -i "s/^language=en$/language=$LANGUAGE/g" /root/ispconfig3_install/install/autoinstall.ini
 fi
 if [ ! -z "$COUNTRY" ]; then
-	sed -i "s/^ssl_cert_country=AU$/ssl_cert_country=$COUNTRY/g" /tmp/ispconfig3_install/install/autoinstall.ini
+	sed -i "s/^ssl_cert_country=AU$/ssl_cert_country=$COUNTRY/g" /root/ispconfig3_install/install/autoinstall.ini
 fi
 if [ ! -z "$HOSTNAME" ]; then
-	sed -i "s/^hostname=server1.example.com$/hostname=$HOSTNAME/g" /tmp/ispconfig3_install/install/autoinstall.ini
+	sed -i "s/^hostname=server1.example.com$/hostname=$HOSTNAME/g" /root/ispconfig3_install/install/autoinstall.ini
 fi
 if [ ! -f /usr/local/ispconfig/interface/lib/config.inc.php ]; then
 	mysql_install_db
@@ -27,13 +27,13 @@ if [ ! -f /usr/local/ispconfig/interface/lib/config.inc.php ]; then
 	&& echo "FLUSH PRIVILEGES;" | mysql -u root
 	sed -i "s/^hostname=server1.example.com$/hostname=$HOSTNAME/g" /root/ispconfig3_install/install/autoinstall.ini
 	# RUN mysqladmin -u root password pass
-	service mysql start && php -q /tmp/ispconfig3_install/install/install.php --autoinstall=/tmp/ispconfig3_install/install/autoinstall.ini
+	service mysql start && php -q /root/ispconfig3_install/install/install.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
 	mkdir /var/www/html
 	echo "" > /var/www/html/index.html
 	rm -r /root/ispconfig3_install
 fi
 
-service mysql start && php -q /tmp/ispconfig3_install/install/install.php --autoinstall=/tmp/ispconfig3_install/install/autoinstall.ini
+
 
 screenfetch
 
