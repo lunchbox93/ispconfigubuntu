@@ -96,7 +96,7 @@ RUN service apache2 restart
 # RUN newaliases
 # RUN service postfix restart
 # RUN ln -s /etc/mailman/apache.conf /etc/apache2/conf-enabled/mailman.conf
-# RUN service apache2 restart
+RUN service apache2 restart
 
 # --- 17 Install PureFTPd and Quota
 # RUN apt-get -y install pure-ftpd-common pure-ftpd-mysql quota quotatool
@@ -151,8 +151,8 @@ RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.g
 ADD ./autoinstall.ini /root/ispconfig3_install/install/autoinstall.ini
 RUN service mysql restart && php -q /root/ispconfig3_install/install/update.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
 #ADD ./etc/apache2/ispconfig.vhost 
-RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
-
+RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/ispconfig.conf
+RUN service apache2 restart
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
 
 EXPOSE 20/tcp 21/tcp 22/tcp 53 80/tcp 443/tcp 953/tcp 8080/tcp 30000 30001 30002 30003 30004 30005 30006 30007 30008 30009 3306
