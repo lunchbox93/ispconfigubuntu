@@ -144,7 +144,7 @@ RUN echo "ignoreregex =" >> /etc/fail2ban/filter.d/postfix-sasl.conf
 # RUN service apache2 restart
 
 # --- 24 Install ISPConfig 3
-RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz && tar xfz ISPConfig-3-stable.tar.gz
+#RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz && tar xfz ISPConfig-3-stable.tar.gz
 
 
 # Install ISPConfig
