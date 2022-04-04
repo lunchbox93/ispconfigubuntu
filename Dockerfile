@@ -22,15 +22,15 @@
 
 FROM ubuntu:18.04
 
-MAINTAINER Weberson S Pimentel <weberson.pimentel@hotmail.com> version: 0.1
+MAINTAINER Starflux Solutions <admin@starfluxsolutions.com> version: 0.1
 
 # --- 1 Prepare Server
 RUN apt-get -y update && apt-get -y upgrade
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update && apt-get -y upgrade && apt-get -y install rsyslog patch rsyslog-relp logrotate supervisor screenfetch nano apt-utils
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install rsyslog patch logrotate supervisor screenfetch apt-utils
 
 # --- 2 Install SSH server, rsync, and enable keys
-RUN apt-get -qq update && apt-get -y -qq install ssh openssh-server rsync && \
+RUN apt-get -qq update && apt-get -y -qq install ssh certbot openssh-server rsync && \
     mkdir /root/.ssh && touch /root/.ssh/authorized_keys
 RUN sed -i 's/^#AuthorizedKeysFile/AuthorizedKeysFile/g' /etc/ssh/sshd_config
 
@@ -46,7 +46,6 @@ RUN dpkg-reconfigure dash
 # --- 5 Synchronize the System Clock
 ENV TZ=America/Chicago
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get -y install ntp ntpdate
 
 # --- 6 Remove sendmail
 RUN echo -n "Removing Sendmail... "	service sendmail stop hide_output update-rc.d -f sendmail remove apt_remove sendmail
@@ -58,8 +57,8 @@ RUN echo "mariadb-server-10.0 mysql-server/root_password password pass" | debcon
 RUN echo "mariadb-server-10.0 mysql-server/root_password_again password pass" | debconf-set-selections
 RUN echo -n "Installing SMTP Mail server (Postfix)... " \
 && echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections \
-&& echo "postfix postfix/mailname string admin@starfluxsolutions.com" | debconf-set-selections
-RUN apt-get -y install postfix postfix-mysql postfix-doc mariadb-client mariadb-server openssl getmail4 binutils dovecot-imapd dovecot-pop3d dovecot-mysql dovecot-sieve dovecot-lmtpd sudo
+&& echo "postfix postfix/mailname string control.starfluxsolutions.com" | debconf-set-selections
+RUN apt-get -y install postfix postfix-mysql amavisd-new spamassassin unzip fail2ban ufw bzip2 arj nomarch lzop cabextract apt-listchanges libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl libnet-ident-perl zip libnet-dns-perl postgrey mariadb-client mariadb-server openssl getmail4 binutils dovecot-imapd dovecot-pop3d dovecot-mysql dovecot-sieve dovecot-lmtpd sudo
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
 RUN mv /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
 ADD ./etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
@@ -68,9 +67,6 @@ ADD ./etc/mysql/debian.cnf /etc/mysql/debian.cnf
 ADD ./etc/security/limits.conf /etc/security/limits.conf
 RUN mkdir -p /etc/systemd/system/mysql.service.d/
 ADD ./etc/systemd/system/mysql.service.d/limits.conf /etc/systemd/system/mysql.service.d/limits.conf
-
-# --- 9 Install Amavisd-new, SpamAssassin And Clamav
-RUN apt-get -y install amavisd-new spamassassin unzip bzip2 arj nomarch lzop cabextract apt-listchanges libnet-ldap-perl libauthen-sasl-perl daemon libio-string-perl libio-socket-ssl-perl libnet-ident-perl zip libnet-dns-perl postgrey
 RUN service spamassassin stop && systemctl disable spamassassin
 RUN update-rc.d -f spamassassin remove
 
@@ -85,24 +81,15 @@ RUN update-rc.d -f spamassassin remove
 RUN echo 'phpmyadmin phpmyadmin/dbconfig-install boolean true' | debconf-set-selections \
 && echo 'phpmyadmin phpmyadmin/mysql/admin-pass password pass' | debconf-set-selections \
 && echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2' | debconf-set-selections
-RUN echo $(grep $(hostname) /etc/hosts | cut -f1) localhost >> /etc/hosts && apt-get -y install apache2 apache2-doc apache2-utils libapache2-mod-php php7.2 php7.2-common php7.2-gd php7.2-mysql php7.2-imap php7.2-cli php7.2-cgi libapache2-mod-fcgid apache2-suexec-pristine php-pear mcrypt  imagemagick libruby libapache2-mod-python php7.2-curl php7.2-intl php7.2-pspell php7.2-recode php7.2-sqlite3 php7.2-tidy php7.2-xmlrpc php7.2-xsl memcached php-memcache php-imagick php-gettext php7.2-zip php7.2-mbstring php-soap php7.2-soap
+RUN echo $(grep $(hostname) /etc/hosts | cut -f1) localhost >> /etc/hosts && apt-get -y install apache2 vlogger webalizer awstats geoip-database libclass-dbi-mysql-perl php7.2-opcache php-apcu php7.2-fpm apache2-utils libapache2-mod-php php7.2 php7.2-common php7.2-gd php7.2-mysql php7.2-imap php7.2-cli php7.2-cgi libapache2-mod-fcgid apache2-suexec-pristine php-pear mcrypt  imagemagick libruby libapache2-mod-python php7.2-curl php7.2-intl php7.2-pspell php7.2-recode php7.2-sqlite3 php7.2-tidy php7.2-xmlrpc php7.2-xsl memcached php-memcache php-imagick php-gettext php7.2-zip php7.2-mbstring php-soap php7.2-soap
 RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf && a2enconf servername
 ADD ./etc/apache2/conf-available/httpoxy.conf /etc/apache2/conf-available/httpoxy.conf
-RUN a2enmod suexec rewrite ssl actions include dav_fs dav auth_digest cgi headers && a2enconf httpoxy && a2dissite 000-default && service apache2 restart
-
-# --- 12 PHP Opcode cache
-RUN apt-get -y install php7.2-opcache php-apcu
-
-# --- 13 PHP-FPM
-RUN apt-get -y install php7.2-fpm
-RUN a2enmod actions proxy_fcgi alias 
+RUN a2enmod actions proxy_fcgi alias suexec rewrite ssl actions include dav_fs dav auth_digest cgi headers && a2enconf httpoxy && a2dissite 000-default && service apache2 restart
 RUN service apache2 restart
 
 # --- 14 Install HHVM (HipHop Virtual Machine)
-#RUN apt-get -y install hhvm
+#RUN apt-get -y install hhv
 
-# --- 15 Install Let's Encrypt
-RUN apt-get -y install certbot
 #RUN apt-get -y install python-certbot-apache
 
 # --- 16 Install Mailman
@@ -132,7 +119,6 @@ RUN apt-get -y install certbot
 
 
 # --- 19 Install Vlogger, Webalizer, and AWStats
-RUN apt-get -y install vlogger webalizer awstats geoip-database libclass-dbi-mysql-perl
 ADD etc/cron.d/awstats /etc/cron.d/
 
 # --- 20 Install Jailkit
@@ -147,15 +133,12 @@ ADD etc/cron.d/awstats /etc/cron.d/
 # && rm -rf jailkit-2.19*
 
 # --- 21 Install fail2ban
-RUN apt-get -y install fail2ban
 ADD ./etc/fail2ban/jail.local /etc/fail2ban/jail.local
 ADD ./etc/fail2ban/filter.d/pureftpd.conf /etc/fail2ban/filter.d/pureftpd.conf
 ADD ./etc/fail2ban/filter.d/dovecot-pop3imap.conf /etc/fail2ban/filter.d/dovecot-pop3imap.conf
 RUN echo "ignoreregex =" >> /etc/fail2ban/filter.d/postfix-sasl.conf
 #RUN service fail2ban restart
 
-# --- 22 UFW firewall
-RUN apt-get install ufw
 
 # --- 23 Install RoundCube
 # RUN service mysql start && apt-get -y install roundcube roundcube-core roundcube-mysql roundcube-plugins
@@ -174,9 +157,6 @@ RUN service mysql restart && php -q /tmp/ispconfig3_install/install/install.php 
 RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
 
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
-ADD ./etc/clamav/clamd.conf /etc/clamav/clamd.conf
-
-RUN echo "export TERM=xterm" >> /root/.bashrc
 
 EXPOSE 20/tcp 21/tcp 22/tcp 53 80/tcp 443/tcp 953/tcp 8080/tcp 30000 30001 30002 30003 30004 30005 30006 30007 30008 30009 3306
 
@@ -184,7 +164,7 @@ EXPOSE 20/tcp 21/tcp 22/tcp 53 80/tcp 443/tcp 953/tcp 8080/tcp 30000 30001 30002
 ADD ./start.sh /start.sh
 ADD ./supervisord.conf /etc/supervisor/supervisord.conf
 ADD ./etc/cron.daily/sql_backup.sh /etc/cron.daily/sql_backup.sh
-#ADD ./autoinstall.ini /tmp/ispconfig3_install/install/autoinstall.ini
+ADD ./autoinstall.ini /tmp/ispconfig3_install/install/autoinstall.ini
 RUN chmod 755 /start.sh
 RUN mkdir -p /var/run/sshd
 RUN mkdir -p /var/log/supervisor
