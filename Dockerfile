@@ -166,9 +166,9 @@ RUN service apache2 restart
 
 # --- 24 Install ISPConfig 3
 RUN cd /tmp \
-&& wget -O ISPConfig-3.1-dev.tar.gz https://git.ispconfig.org/ispconfig/ispconfig3/repository/archive.tar.gz?ref=stable-3.1 \
-&& tar xfz ISPConfig-3.1-dev.tar.gz \
-&& mv ispconfig3-stable-3.1* ispconfig3_install
+&& wget -O ispconfig.tar.gz https://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.gz \
+&& tar xfz ispconfig.tar.gz \
+&& mv ispconfig3-stable* ispconfig3_install
 
 # Install ISPConfig
 ADD ./autoinstall.ini /tmp/ispconfig3_install/install/autoinstall.ini
