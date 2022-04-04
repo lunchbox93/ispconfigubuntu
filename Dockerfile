@@ -152,8 +152,9 @@ RUN cd /root && wget http://www.ispconfig.org/downloads/ISPConfig-3-stable.tar.g
 
 # Install ISPConfig
 ADD ./autoinstall.ini /root/ispconfig3_install/install/autoinstall.ini
-RUN service mysql restart && php -q /root/ispconfig3_install/install/update.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
-RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
+#RUN service mysql restart && php -q /root/ispconfig3_install/install/update.php --autoinstall=/root/ispconfig3_install/install/autoinstall.ini
+#ADD ./etc/apache2/ispconfig.vhost 
+#RUN sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.vhost && sed -i 's/^NameVirtualHost/#NameVirtualHost/g' /etc/apache2/sites-enabled/000-ispconfig.conf
 
 ADD ./etc/postfix/master.cf /etc/postfix/master.cf
 
@@ -180,4 +181,4 @@ VOLUME ["/var/www/","/var/mail/","/var/backup/","/var/lib/mysql","/etc/","/usr/l
 # Must use double quotes for json formatting.
 CMD ["/usr/bin/supervisord", "--configuration=/etc/supervisor/supervisord.conf"]
 
-CMD ["/bin/bash", "/start.sh"]
+#CMD ["/bin/bash", "/start.sh"]
